@@ -204,7 +204,7 @@ solve_quadprog(const Eigen::Matrix<T0__, -1, -1> &G,
    * this is a feasible point in the dual space
    * x = G^-1 * g0
    */
-  x = chol.solve(g0).eval();
+  x = chol.solve(g0);
   x = -x;
   /* and compute the current solution value */
   f_value = 0.5 * g0.dot(x);
