@@ -19,12 +19,15 @@ data {
 }
 
 transformed data{
-  real res = solve_quadprog(G, g0, CE, ce0, CI, ci0, x);
+  
 }
 
 parameters{
   real y;
 }
 model {
- y ~ normal(0,1);
+  y ~ normal(0,1);
+}
+generated quantities {
+  real res = solve_quadprog(G, g0, CE, ce0, CI, ci0, x);
 }
