@@ -7,12 +7,14 @@ functions {
 
 data {
   int N;
+  int P;
+  int M;
   matrix[N,N] G; 
   vector[N] g0;
-  matrix[N,N] CE;
-  vector[N] ce0;
-  matrix[N,N] CI;
-  vector[N] ci0;
+  matrix[N,P] CE;
+  vector[P] ce0;
+  matrix[N,M] CI;
+  vector[M] ci0;
   vector[N] x;
 }
 
