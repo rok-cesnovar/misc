@@ -82,6 +82,7 @@
 #include <boost/math/tools/promotion.hpp>
 #include <cmath>
 #include <stan/math/prim/fun/Eigen.hpp>
+#include <iostream>
 
 using Eigen::LLT;
 using Eigen::Lower;
@@ -127,18 +128,19 @@ bool add_constraint(MatrixXd &R, MatrixXd &J, VectorXd &d, int &iq,
 void delete_constraint(MatrixXd &R, MatrixXd &J, VectorXi &A, VectorXd &u,
                        int p, int &iq, int l);
 
-namespace quadprog_test_model_model_namespace {
 // CHECK - Edit the first two arguments to make them constants.
 template <typename T0__, typename T1__, typename T2__, typename T3__,
-typename T4__, typename T5__>
-Eigen::Matrix<typename boost::math::tools::promote_args<T0__, T1__, T2__, T3__,
-T4__, typename boost::math::tools::promote_args<T5__>::type>::type, -1, 1>
-solve_quadprog(const Eigen::Matrix<T0__, -1, -1>& G,
-               const Eigen::Matrix<T1__, -1, 1>& g0,
-               const Eigen::Matrix<T2__, -1, -1>& CE,
-               const Eigen::Matrix<T3__, -1, 1>& ce0,
-               const Eigen::Matrix<T4__, -1, -1>& CI,
-               const Eigen::Matrix<T5__, -1, 1>& ci0, std::ostream* pstream__)  {
+          typename T4__, typename T5__, typename T6__>
+typename boost::math::tools::promote_args<
+    T0__, T1__, T2__, T3__, T4__,
+    typename boost::math::tools::promote_args<T5__, T6__>::type>::type
+solve_quadprog_1(const Eigen::Matrix<T0__, -1, -1> &G,
+               const Eigen::Matrix<T1__, -1, 1> &g0,
+               const Eigen::Matrix<T2__, -1, -1> &CE,
+               const Eigen::Matrix<T3__, -1, 1> &ce0,
+               const Eigen::Matrix<T4__, -1, -1> &CI,
+               const Eigen::Matrix<T5__, -1, 1> &ci0,
+               Eigen::Matrix<T6__, -1, 1> &x) {
 
   using std::abs;
   int i, j, k, l; /* indices */
@@ -156,7 +158,7 @@ solve_quadprog(const Eigen::Matrix<T0__, -1, -1>& G,
   LLT<MatrixXd, Lower> chol(G.cols());
 
   VectorXd s(m + p), z(n), r(m + p), d(n), np(n), u(m + p);
-  VectorXd x(n), x_old(n), u_old(m + p);
+  VectorXd x_old(n), u_old(m + p);
   double f_value, psi, c1, c2, sum, ss, R_norm;
   const double inf = std::numeric_limits<double>::infinity();
   double t, t1, t2; /* t is the step length, which is the minimum of the partial
@@ -245,7 +247,7 @@ solve_quadprog(const Eigen::Matrix<T0__, -1, -1>& G,
     if (!add_constraint(R, J, d, iq, R_norm)) {
       // FIXME: it should raise an error
       // Equality constraints are linearly dependent
-      return x;
+      return f_value;
     }
   }
 
@@ -282,7 +284,7 @@ l1:
       mi * std::numeric_limits<double>::epsilon() * c1 * c2 * 100.0) {
     /* numerically there are not infeasibilities anymore */
     q = iq;
-    return x;
+    return f_value;
   }
 
   /* save old values for u, x and A */
@@ -299,7 +301,7 @@ l2: /* Step 2: check for feasibility and determine a new S-pair */
   }
   if (ss >= 0.0) {
     q = iq;
-    return x;
+    return f_value;
   }
 
   /* set np = n(ip) */
@@ -365,7 +367,7 @@ l2a: /* Step 2a: determine step direction */
     /* QPP is infeasible */
     // FIXME: unbounded to raise
     q = iq;
-    return x;
+    return inf;
   }
   /* case (ii): step in dual space */
   if (t2 >= inf) {
@@ -450,7 +452,6 @@ l2a: /* Step 2a: determine step direction */
   print_vector("s", s, mi);
 #endif
   goto l2a;
-}
 }
 
 inline bool add_constraint(MatrixXd &R, MatrixXd &J, VectorXd &d, int &iq,
@@ -586,5 +587,23 @@ inline void delete_constraint(MatrixXd &R, MatrixXd &J, VectorXi &A,
       J(k, j) = t1 * cc + t2 * ss;
       J(k, j + 1) = xny * (J(k, j) + t1) - t2;
     }
+  }
+}
+
+namespace quadprog_test_model_model_namespace {
+
+template <typename T0__, typename T1__, typename T2__, typename T3__,
+typename T4__, typename T5__>
+Eigen::Matrix<typename boost::math::tools::promote_args<T0__, T1__, T2__, T3__,
+T4__, typename boost::math::tools::promote_args<T5__>::type>::type, -1, 1>
+solve_quadprog(const Eigen::Matrix<T0__, -1, -1>& G,
+               const Eigen::Matrix<T1__, -1, 1>& g0,
+               const Eigen::Matrix<T2__, -1, -1>& CE,
+               const Eigen::Matrix<T3__, -1, 1>& ce0,
+               const Eigen::Matrix<T4__, -1, -1>& CI,
+               const Eigen::Matrix<T5__, -1, 1>& ci0, std::ostream* pstream__) {
+    Eigen::VectorXd x(g0.size());
+    solve_quadprog_1(G, g0, CE, ce0, CI, ci0, x);
+    return x;    
   }
 }

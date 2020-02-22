@@ -17,10 +17,6 @@ data {
   vector[M] ci0;
 }
 
-transformed data{
-  
-}
-
 parameters{
   real y;
 }
