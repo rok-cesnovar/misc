@@ -23,9 +23,14 @@ CE <- matrix(c(1, 2, -1),3,1);
 ce0 <- c(-4);
 dim(ce0) <- c(1)
 
-CI <- matrix(c(1, 0, 0, -1,
+# I had to be careful here so that the matrix actually looks like this: 
+#      [,1] [,2] [,3] [,4]
+# [1,]    1    0    0   -1
+# [2,]    0    1    0   -1
+# [3,]    0    0    1    0
+CI <- t(matrix(c(1, 0, 0, -1,
         0, 1, 0, -1,
-        0, 0, 1,  0), 3,4)
+        0, 0, 1,  0), 4,3))
 
 ci0 <- c(0, 0, 0, 10);
 
