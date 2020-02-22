@@ -3,8 +3,6 @@
 //g++ quadprog.cpp -I"/home/rok/R/x86_64-pc-linux-gnu-library/3.5/Rcpp/include/"  -I"/home/rok/R/x86_64-pc-linux-gnu-library/3.5/RcppEigen/include/"  -I"/home/rok/R/x86_64-pc-linux-gnu-library/3.5/RcppEigen/include/unsupported"  -I"/home/rok/R/x86_64-pc-linux-gnu-library/3.5/BH/include" -I"/home/rok/R/x86_64-pc-linux-gnu-library/3.5/StanHeaders/include/src/"  -I"/home/rok/R/x86_64-pc-linux-gnu-library/3.5/StanHeaders/include/"  -I"/home/rok/R/x86_64-pc-linux-gnu-library/3.5/rstan/include"
 //g++ quadprog.cpp -I"/Library/Frameworks/R.framework/Versions/3.5/Resources/library/Rcpp/include/"  -I"/Library/Frameworks/R.framework/Versions/3.5/Resources/library/RcppEigen/include/"  -I"/Library/Frameworks/R.framework/Versions/3.5/Resources/library/RcppEigen/include/unsupported"  -I"/Library/Frameworks/R.framework/Versions/3.5/Resources/library/BH/include" -I"/Library/Frameworks/R.framework/Versions/3.5/Resources/library/StanHeaders/include/src/"  -I"/Library/Frameworks/R.framework/Versions/3.5/Resources/library/StanHeaders/include/"  -I"/Library/Frameworks/R.framework/Versions/3.5/Resources/library/rstan/include"
 
-// The model now compiles with the new function. I also modified the .cpp file to now directly call what we have in .hpp.
-
 int main(int argc, char** argv){
   Eigen::MatrixXd G(3,3); 
   Eigen::VectorXd g0(3);
