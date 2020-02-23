@@ -88,8 +88,7 @@ stan_data = list(
   CI = CI,
   ci0 = ci0,
   CE = CE,
-  ce0 = ce0,
-  x = xstart
+  ce0 = ce0
 )
 
 idk = sampling(
