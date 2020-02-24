@@ -81,7 +81,7 @@
  */
 #include <boost/math/tools/promotion.hpp>
 #include <cmath>
-#include <stan/math/prim/mat/fun/Eigen.hpp>
+#include <stan/math/prim/fun/Eigen.hpp>
 #include <iostream>
 
 using Eigen::LLT;
@@ -590,16 +590,20 @@ inline void delete_constraint(MatrixXd &R, MatrixXd &J, VectorXi &A,
   }
 }
 
-template <typename T0__, typename T1__, typename T2__, typename T3__, typename T4__, typename T5__>
-Eigen::Matrix<typename boost::math::tools::promote_args<T0__, T1__, T2__, T3__, typename boost::math::tools::promote_args<T4__, T5__>::type>::type, Eigen::Dynamic, 1>
-solve_quadprog(const Eigen::Matrix<T0__, Eigen::Dynamic, Eigen::Dynamic>& G,
-                   const Eigen::Matrix<T1__, Eigen::Dynamic, 1>& g0,
-                   const Eigen::Matrix<T2__, Eigen::Dynamic, Eigen::Dynamic>& CE,
-                   const Eigen::Matrix<T3__, Eigen::Dynamic, 1>& ce0,
-                   const Eigen::Matrix<T4__, Eigen::Dynamic, Eigen::Dynamic>& CI,
-                   const Eigen::Matrix<T5__, Eigen::Dynamic, 1>& ci0, std::ostream* pstream__) {
-    Eigen::Matrix<typename boost::math::tools::promote_args<T0__, T1__, T2__, T3__,
-T4__, typename boost::math::tools::promote_args<T5__>::type>::type, -1, 1> x(g0.size());
+namespace quadprog_test_model_model_namespace {
+
+template <typename T0__, typename T1__, typename T2__, typename T3__,
+typename T4__, typename T5__>
+Eigen::Matrix<typename boost::math::tools::promote_args<T0__, T1__, T2__, T3__,
+T4__, typename boost::math::tools::promote_args<T5__>::type>::type, -1, 1>
+solve_quadprog(const Eigen::Matrix<T0__, -1, -1>& G,
+               const Eigen::Matrix<T1__, -1, 1>& g0,
+               const Eigen::Matrix<T2__, -1, -1>& CE,
+               const Eigen::Matrix<T3__, -1, 1>& ce0,
+               const Eigen::Matrix<T4__, -1, -1>& CI,
+               const Eigen::Matrix<T5__, -1, 1>& ci0, std::ostream* pstream__) {
+    Eigen::VectorXd x(g0.size());
     solve_quadprog_1(G, g0, CE, ce0, CI, ci0, x);
     return x;    
+  }
 }
