@@ -48,6 +48,9 @@ jobs:
     - name: Print mingw32-make path
       shell: powershell
       run: Get-Command mingw32-make | Select-Object -ExpandProperty Definition
+    - name: List files
+      shell: powershell
+      run: dir .
     - name: Build Cmdstanr
       shell: powershell
       run: mingw32-make build 
