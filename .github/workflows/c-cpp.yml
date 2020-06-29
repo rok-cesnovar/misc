@@ -1,0 +1,25 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout R package repo
+      uses: actions/checkout@v2
+      with:
+        repository: stan-dev/math
+    - name: install g++ 4.9
+      run: |
+        echo "deb http://dk.archive.ubuntu.com/ubuntu/ xenial main" >> /etc/apt/sources.list
+        echo "deb http://dk.archive.ubuntu.com/ubuntu/ xenial universe" >> /etc/apt/sources.list
+        sudo apt update && sudo apt install g++-4.9
+        g++-4.9 --version
+      shell: sh
