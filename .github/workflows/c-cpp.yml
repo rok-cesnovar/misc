@@ -39,6 +39,7 @@ jobs:
 
       - name: Install dependencies
         run: |
+          install.packages("remotes")
           remotes::install_github("stan-dev/rstan", ref = "develop", subdir = "rstan/rstan")
         shell: Rscript {0}
 
