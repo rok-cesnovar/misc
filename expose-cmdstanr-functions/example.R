@@ -1,7 +1,6 @@
 # the script requires the following packages:
 # Rcpp and RcppEigen, cmdstanr
 
-setwd("~/Desktop/misc/expose_cmdstanr_functions/")
 source("./expose_cmdstanr_functions.R")
 
 model_code <- "
