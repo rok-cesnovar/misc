@@ -9,3 +9,7 @@ The Stan-comaptible C++  implementation of the algorithm of Goldfarb and Idnani 
 ## stan-talk-calibrated
 
 The slides and code used for the talk "State and evolution of Stan" for the Calibrated Webcast series by Generable.
+
+# expose-cmdstanr-functions
+
+A way to exposing Stan user-defined functions using CmdStanR and Rcpp.
