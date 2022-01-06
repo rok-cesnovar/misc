@@ -124,6 +124,12 @@ namespace Rcpp {
 
 }
 
+RcppExport SEXP dada() {
+    return Rcpp::List::create(Rcpp::Named(\"v\") = 1 ,
+                          Rcpp::Named(\"c\") = 2,
+                          Rcpp::Named(\"d\") = 3);
+}
+
 RcppExport SEXP get_stream_() {
   std::ostream* pstream(&Rcpp::Rcout);
   Rcpp::XPtr<std::ostream> ptr(pstream, false);
@@ -178,3 +184,15 @@ code, sep = "\n")
     assign(x, FUN, envir = globalenv())
   }
 }
+
+model_code <- "
+functions {
+  vector foo(vector a, vector b) {
+    return a + b;
+  }
+}
+"
+model_path <- cmdstanr::write_stan_file(model_code)
+expose_cmdstanr_function(model_path)
+
+a <- foo(c(1, 2, 3), c(4, 5, 6))
