@@ -1,4 +1,4 @@
-# miss
+# misc
 
 A collection of miscellaneous materials that I wanted to share.
 
