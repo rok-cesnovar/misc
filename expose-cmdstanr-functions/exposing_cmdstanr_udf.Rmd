@@ -1,20 +1,34 @@
-#' Function to expose Stan user-defined functions in R using CmdStanr and Rcpp.
-#' 
-#' In addition to all user-defined functions, this function will expose the
-#' stan_rng__(seed) function, that can be used to supplied specific seeds to
-#' Stan RNG UDFs.
-#' 
-#' @param model_path Path to the Stan model file with user-defined functions
-#' to expose.
-#' @param include_paths Paths to folders with files included in the Stan model.
-#' @param expose_to_global_env If `TRUE`, the function will expose Stan
-#' user-defined functions to the global R enivornment. If `FALSE`, the function
-#' will return a new environment that includes all Stan UDFs. The default value
-#' is `FALSE`.
-#'
-#' @return If `expose_to_global_env` is `FALSE`, the new environment with
-#' exposed user-defined functions, NULL otherwise.
-#'
+---
+title: "Exposing Stan user-defined functions using CmdStanR and Rcpp"
+author: Rok Češnovar
+date: "`r Sys.Date()`"
+output:
+  bookdown::gitbook:
+    split_by: none
+    self_contained: true
+---
+
+```{css, echo=FALSE}
+pre {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+pre[class] {
+  max-height: 300px;
+}
+```
+
+# Introduction
+
+This document showcases how to expose user-defined Stan functions using CmdStanR. To run the examples below, you need to have CmdStanR, Rcpp and RcppEigen packages installed and an installation of CmdStan. The minimum CmdStan version is 2.26.2, though I recommend running with 2.29.2 or newer.
+If you experience issues using this function or running the tutorial below or have a feature request, please report it on the issue tracker [here](https://github.com/rok-cesnovar/misc/issues).
+
+# Preparing the environment
+
+We first need to load the function `expose_cmdstanr_functions()` that will do all the hard work for us. The function is available on Github [here](https://github.com/rok-cesnovar/misc/blob/master/expose-cmdstanr-functions/expose_cmdstanr_functions.R). You can also copy and source the code below.
+
+```{r load_function}
 expose_cmdstanr_functions <- function(model_path, include_paths = NULL,
                                      expose_to_global_env = FALSE) {
   required_pkgs <- c("Rcpp", "RcppEigen", "cmdstanr")
@@ -221,3 +235,125 @@ expose_cmdstanr_functions <- function(model_path, include_paths = NULL,
     return(env)
   }
 }
+```
+
+# Simple example
+
+Once we load the above `expose_cmdstanr_functions()` function into the R environmentm we can try it out on a Stan function that applies the `softmax()` to each row of an input matrix. We can write the function(s) in a file with a `.stan` or `.stanfunctions` suffix or a string inside an R script.  Using separate files is recommended, as developing functions inside strings is not user friendly. To make it a bit easier for you to copy and run this tutorial on your own, this example is using Stan functions written in strings.
+
+```{r stan_udf_rows_softmax}
+model_code <- "
+functions {
+  matrix rows_softmax(matrix x) {
+    matrix[rows(x), cols(x)] y;
+    for(i in 1:rows(x)) {
+      y[i, :] = softmax(x[i, ]')';
+    }
+    return y;
+  }
+}
+"
+```
+
+We then use the `write_stan_file()` utility function from `cmdstanr` to store the model code in a file. If you prefer, you can also use the `write()` function in base R or any other function that writes a string in a file. Make sure the file has a `.stan`or `.stanfunctions` extension.
+```{r stan_file_softmax}
+stan_file <- cmdstanr::write_stan_file(code = model_code)
+```
+
+Finally, we supply the written `stan_file` to `expose_cmdstanr_functions()`:
+
+```{r stan_udf_softmax}
+udfs <- expose_cmdstanr_functions(model_path = stan_file)
+```
+
+The function returns a new environment with the Stan UDF in it. We can thus use `udfs$rows_softmax()` directly in R. We create a matrix of random values
+
+```{r random_matrix}
+input_matrix <- matrix(runif(25, 0, 2), nrow = 5)
+input_matrix
+```
+pass the input matrix to the Stan UDF
+```{r res_softmax}
+res <- udfs$rows_softmax(input_matrix)
+res
+```
+and finally validate that rows do actually sum to 1.
+
+```{r check_softmax}
+apply(res, 1, sum)
+```
+
+And that is it! Well, at least if you do not plan on working with random number generators. If you do, continue with the next section.
+
+# RNG user-defined functions
+
+When working with RNG functions, we need a way to specify the seed for the random number generator to make things reproducible. In the example we will use the `gpareto_rng` function from [Aki Vehtari's case study](https://mc-stan.org/users/documentation/case-studies/gpareto_functions.html). You can also find it in [Sean Pinkney's helpful Stan functions repo](https://github.com/spinkney/helpful_stan_functions/blob/21bc48a405bbf43539eed6aca2dff7830858de06/functions/distribution/gpareto.stanfunctions#L137). We can proceed to expose the function:
+
+```{r stan_udf_gpareto_rng}
+gpareto_code <- "
+functions {
+  real gpareto_rng(real ymin, real k, real sigma) {
+    if (sigma <= 0) 
+      reject(\"sigma <= 0; found sigma = \", sigma);
+    
+    if (fabs(k) > 1e-15) 
+      return ymin + (uniform_rng(0, 1) ^ -k - 1) * sigma / k;
+    else 
+      return ymin - sigma * log(uniform_rng(0, 1)); // limit k->0
+  }
+}
+"
+stan_file_rng <- cmdstanr::write_stan_file(code = gpareto_code)
+udfs_rng <- expose_cmdstanr_functions(model_path = stan_file_rng)
+```
+
+We define some inputs and generat a few values:
+```{r stan_udf_gpareto_rng_use}
+ymin <- rexp(1)
+k <- rexp(1,5)
+sigma <- rexp(1)
+udfs_rng$gpareto_rng(ymin, k, sigma)
+udfs_rng$gpareto_rng(ymin, k, sigma)
+udfs_rng$gpareto_rng(ymin, k, sigma)
+```
+If we do not specify a seed, the random generator is created using the default seed.
+
+If we examine what names are in the returned environment, we will find the `gpareto_rng` function we expected. But, we will also find a function called `stan_rng__`. This function is used to create a random number generator object with a specified seed. The function has a double underscores suffix in order to avoid any chance of shadowing with a potential Stan UDF function.
+
+```{r stan_udf_gpareto_rng_names}
+names(udfs_rng)
+```
+
+If we want to make our code reproducible, we generate an RNG object with a seed and then the RNG function and set the `base_rng__` argument of the exposed function to our created RNG object. The generator object advances with each call to the Stan RNG user-defined function.
+
+```{r stan_udf_gpareto_rng_seed}
+ymin <- rexp(1)
+k <- rexp(1,5)
+sigma <- rexp(1)
+seed <- udfs_rng$stan_rng__(1)
+vals <- c()
+for(i in 1:10) {
+  vals <- c(vals, udfs_rng$gpareto_rng(ymin, k, sigma, base_rng__ = seed))
+}
+vals
+```
+
+If we then create a separate generator object with the same seed we will get the same stream of generated values.
+
+```{r stan_udf_gpareto_rng_seed_again}
+seed <- udfs_rng$stan_rng__(1)
+vals <- c()
+for(i in 1:10) {
+  vals <- c(vals, udfs_rng$gpareto_rng(ymin, k, sigma, base_rng__ = seed))
+}
+vals
+```
+
+# Exposing UDFs to the global namespace 
+
+If you want to expose the functions directly to the global R namespace, set the `expose_to_global_env` argument to `TRUE`.
+
+```{r stan_udf_softmax_global}
+expose_cmdstanr_functions(model_path = stan_file, expose_to_global_env = TRUE)
+rows_softmax(input_matrix)
+```
