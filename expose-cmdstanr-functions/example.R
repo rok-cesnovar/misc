@@ -11,6 +11,6 @@ functions {
 }
 "
 model_path <- cmdstanr::write_stan_file(model_code)
-expose_cmdstanr_function(model_path)
+udfs <- expose_cmdstanr_function(model_path)
 
-a <- foo(c(1, 2, 3), c(4, 5, 6))
+a <- udfs$foo(c(1, 2, 3), c(4, 5, 6))
