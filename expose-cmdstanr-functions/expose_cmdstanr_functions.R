@@ -4,6 +4,8 @@
 #' stan_rng__(seed) function, that can be used to supplied specific seeds to
 #' Stan RNG UDFs.
 #' 
+#' The function is licensed under BSD-3. For details see the LICENSE file.
+#'
 #' @param model_path Path to the Stan model file with user-defined functions
 #' to expose.
 #' @param include_paths Paths to folders with files included in the Stan model.
