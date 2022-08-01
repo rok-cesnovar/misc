@@ -13,3 +13,7 @@ The slides and code used for the talk "State and evolution of Stan" for the Cali
 ## expose-cmdstanr-functions
 
 A function to expose Stan user-defined functions using CmdStanR and Rcpp. The folder includes a simple example and a tutorial written in .Rmd. The tutorial is also available [online](https://rok-cesnovar.github.io/misc/exposing_cmdstanr_udf.html).
+
+## democmdstanr
+
+A simple example of how to build a package that depends on cmdstanr.
